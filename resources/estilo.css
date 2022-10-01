@@ -1,0 +1,58 @@
+body{
+    font-family: 'Courier New', Courier, monospace;
+    width:50%;
+    margin:0 auto;
+}
+
+h1{
+    text-align:center;
+}
+
+nav li{
+    display:inline-block;
+    list-style: none;
+    margin-left:20px;
+}
+
+
+/*
+    Estilos para los índices de últimos artículos
+*/
+.user-index-last-entry a{
+    font-size:1.3em;
+    color:black;
+    font-weight: bold;
+    text-decoration:none;
+}
+
+.user-index-last-entry a:hover{
+    text-decoration:none;
+}
+
+.user-index-last-entry .meta{
+    font-size:0.9em;
+    color:grey;
+}
+
+article.user-index-last-entry{
+    margin-bottom:50px;
+}
+
+
+/*
+    Estilos para los índices completos de cada usuario
+*/
+
+.user-index-all-entry span{
+    margin-right:10px;
+}
+
+
+
+
+/*
+    Estilos para mostrar el artículo completo
+*/
+#article-content h1{
+    text-align:left;
+}
