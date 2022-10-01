@@ -10,11 +10,13 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from pathlib import Path
 import markdown
+import filecmp
 
 
 
-HTML_ROOT_DIR="./htmltest"
-MD_ROOT_DIR="./mdtest"
+HTML_ROOT_DIR="./htmltest"  # html 
+MD_ROOT_DIR="./mdtest"      # markdown accepted files
+USR_ROOT="./usrtest"      # markdown dratf files (must be /home)
 HTML_TEMPLATES="./templates"
 
 #
@@ -226,6 +228,44 @@ def getDateFromString(datestr):
 
 
 
+#
+# Traspasa ficheros desde los directorios personales de los usuarios
+# al repositorio general de ficheros aceptados en MD_ROOT_DIR
+#
+def moderateContent():
+    moderateFiles=[]
+    for user in os.listdir(USR_ROOT):
+        for file in os.listdir(USR_ROOT+"/"+user+"/blog"):
+            srcfile=USR_ROOT+"/"+user+"/blog"+"/"+file
+            acceptedfile=MD_ROOT_DIR+"/"+user+"/"+file
+            if not os.path.exists(acceptedfile):
+                moderateFiles.append(srcfile)
+            else: 
+                if not filecmp.cmp(srcfile,acceptedfile):
+                    moderateFiles.append(srcfile)
+
+            
+    print("Hay "+str(len(moderateFiles))+" pendientes de moderación")
+
+    try:
+        input("Pulsa 'enter' para iniciar la revisión o Ctrl+C para abandonar\n")
+    except:
+        print()
+        return
+
+    for filepath in moderateFiles:
+        os.system("less "+filepath)
+        try:
+            print("¿Aceptas el artículo "+filepath+"? Pulsa")
+            opt=input(" [S]i\t[N]o\tCtrl+X para salir\t Cualquier tecla para dejarlo a la espera: ")
+            if opt=="S" or opt=="s":
+                print ("Articulo "+filepath+"\t[Aceptado]")
+            if opt=="N" or opt=="n":
+                print ("Articulo "+filepath+"\t[Cancelado]")
+                os.system("nano "+filepath)
+        except:
+            print()
+            return
 
 
 if __name__=='__main__':
@@ -238,7 +278,7 @@ if __name__=='__main__':
 
 
     if sys.argv[1]=="--moderate":
-        print ("No implementado")
+        moderateContent()
 
 
 ### Código de ejemplo de moderación

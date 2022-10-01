@@ -21,7 +21,7 @@ def createRandomDateString():
     randay=str(random.randrange(1,30)).zfill(2)
     randmonth=str(random.randrange(1,12)).zfill(2)
     randyear=str(random.randrange(2017,2022))
-    return randay+randmonth+randyear
+    return randyear+randmonth+randay
 
 
 #
@@ -86,12 +86,13 @@ def createMDFile(name):
 #
 def createMDContent():
     i=0
-    for dir in os.listdir("./mdtest"):
+    for user in os.listdir("./usrtest"):
         randpages=random.randrange(8)+4
         for i in range(0,randpages):
             id=str(i).zfill(2)
-            filename=createRandomWord()+".md"
-            createMDFile("./mdtest/"+dir+"/"+filename)
+            #filename=createRandomWord()+".md"
+            filename=createRandomDateString()+".md"
+            createMDFile("./usrtest/"+user+"/blog/"+filename)
 
 
 
