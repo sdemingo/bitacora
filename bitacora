@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 import os
 import random
 import re
@@ -214,7 +215,6 @@ def createRandomDateString():
     randay=str(random.randrange(1,27)).zfill(2)
     randmonth=str(random.randrange(1,12)).zfill(2)
     randyear=str(random.randrange(2017,2022))
-    #return randay+randmonth+randyear
     return randyear+randmonth+randay
 
 #
@@ -229,10 +229,16 @@ def getDateFromString(datestr):
 
 
 if __name__=='__main__':
-    publishAllContent()
+    if len(sys.argv)<2:
+        print ("\t\t bitacora [ --build | --moderate ] ")
+        sys.exit(0)
+
+    if sys.argv[1]=="--build":
+        publishAllContent()
 
 
-
+    if sys.argv[1]=="--moderate":
+        print ("No implementado")
 
 
 ### Código de ejemplo de moderación
