@@ -260,6 +260,7 @@ def moderateContent():
             opt=input(" [S]i\t[N]o\tCtrl+X para salir\t Cualquier tecla para dejarlo a la espera: ")
             if opt=="S" or opt=="s":
                 print ("Articulo "+filepath+"\t[Aceptado]")
+                ## Copiar el fichero en el repo de articulos aceptados
             if opt=="N" or opt=="n":
                 print ("Articulo "+filepath+"\t[Cancelado]")
                 os.system("nano "+filepath)
@@ -279,43 +280,3 @@ if __name__=='__main__':
 
     if sys.argv[1]=="--moderate":
         moderateContent()
-
-
-### Código de ejemplo de moderación
-### usando la herramienta externa glow
-
-
-# POSTS=`find . -type f -name '*.md'`
-# REJECTS_FILE='comentarios.txt'
-
-
-# for P in $POSTS
-# do
-#     echo
-#     echo "------------------------------------------------------------"
-#     echo "Revisando artículo $P"
-#     glow -p $P
-
-#     DIR=$(dirname -- "$P")
-#     TITLE=`grep ^# $P | head -1`
-#     TITLE=${TITLE#?}
-
-#     echo "¿Aceptas el artículo para su publicación?"
-#     read -p "[S]i    [N]o    [C]ancelar y continuar con otro: " OPCION
-#     echo
-#     if [ "$OPCION" == "s" ] || [ "$OPCION" == "S" ]
-#     then
-# 	echo "Artículo aceptado"
-# 	echo -e "* [ACEPTADO]\t$TITLE" >> "$DIR/$REJECTS_FILE"
-#     else	
-# 	echo "Artículo rechazado"
-# 	echo -e "* [RECHAZADO]\t$TITLE" >> "$DIR/$REJECTS_FILE"
-# 	echo " Artículo rechazado debido a:" > /tmp/reject.comment
-# 	nano /tmp/reject.comment
-# 	cat /tmp/reject.comment  >> "$DIR/$REJECTS_FILE"
-# 	echo  >> "$DIR/$REJECTS_FILE"
-#     fi
-
-#     # El fichero md debe ser borrado del directorio de artículos propuestos
-#     # tanto si es aceptado como sino
-# done
