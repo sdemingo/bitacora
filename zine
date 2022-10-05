@@ -15,9 +15,14 @@ import filecmp
 
 
 HTML_ROOT_DIR="./htmltest"  # html 
-MD_ROOT_DIR="./mdtest"      # markdown accepted files
+ACCEPTED_DIR="./mdtest"      # markdown accepted files
 USR_ROOT="./usrtest"      # markdown dratf files (must be /home)
 HTML_TEMPLATES="./templates"
+
+MESSAGE_NEW_POST="\n\n\t ========= ARTÍCULO NUEVO ========= \n\n"
+MESSAGE_UPDATE_POST="\n\n\t ========= ARTÍCULO PARA ACTUALIZAR  ========= \n\n"
+
+DEBUG_MODE=True
 
 #
 # En este array guardamos todos los articulos procesados en forma
@@ -26,7 +31,8 @@ HTML_TEMPLATES="./templates"
 posts=[]
 
 
-
+def debug(error):
+    if DEBUG_MODE: print(err)
 
 #
 # Crea una página de índice con los úĺtimos artículos de todos
@@ -44,7 +50,7 @@ def createMainBlogIndex(limit=10):
         title,summary = getTitleAndSummaryFromArticle(filecontent)
         sdate=getDateFromString(os.path.basename(path).strip(".html"))
         pdate=sdate.strftime("%d/%m/%Y")
-        with open(HTML_TEMPLATES+"/user-index-last-entry.html") as t:
+        with open(HTML_TEMPLATES+"/main-index-entry.html") as t:
                 template=Template(t.read())
                 newitem=template.substitute(title=title,url=url,
                 author=author,date=pdate,summary=summary)
@@ -164,8 +170,8 @@ def extractTitleFromMD(mdcontent):
 #
 def publishUserContent(user,template):
     print ("Generating HTML content from "+user)
-    for filename in os.listdir(MD_ROOT_DIR+"/"+user):
-        with open(MD_ROOT_DIR+"/"+user+"/"+filename) as f:
+    for filename in os.listdir(ACCEPTED_DIR+"/"+user):
+        with open(ACCEPTED_DIR+"/"+user+"/"+filename) as f:
             md=f.read()
             title=extractTitleFromMD(md)
             htmlpost = markdown.markdown(md)
@@ -188,7 +194,6 @@ def publishUserContent(user,template):
 # y crea todos los índices de los usuarios
 #
 def publishAllContent():
-
     contentTemplate=""
     with open(HTML_TEMPLATES+"/user-full-post.html") as t:
         contentTemplate=Template(t.read())
@@ -197,7 +202,7 @@ def publishAllContent():
     
     os.system("rm -r "+HTML_ROOT_DIR)
     os.system("mkdir -p "+HTML_ROOT_DIR)
-    for user in os.listdir(MD_ROOT_DIR):
+    for user in os.listdir(ACCEPTED_DIR):
         os.system("mkdir -p "+HTML_ROOT_DIR+"/"+user)
         publishUserContent(user,contentTemplate)
         createMainIndexFrom(user)
@@ -206,6 +211,21 @@ def publishAllContent():
     os.system("cp -r ./resources "+HTML_ROOT_DIR)
     createMainBlogIndex()
 
+
+#
+# Acepta el artículo moviéndolo desde el espacio personal del usuario
+# al repositorio de artículos aceptados
+#
+def acceptPost(srcpath,user):
+    try:
+        #os.makedirs(ACCEPTED_DIR)
+        os.makedirs(ACCEPTED_DIR+"/"+user)
+    except FileExistsError:
+        pass
+
+    filename=os.path.basename(srcpath)
+    dstpath=ACCEPTED_DIR+"/"+user+"/"+filename
+    shutil.copyfile(srcpath, dstpath)
 
 
 
@@ -230,42 +250,45 @@ def getDateFromString(datestr):
 
 #
 # Traspasa ficheros desde los directorios personales de los usuarios
-# al repositorio general de ficheros aceptados en MD_ROOT_DIR
+# al repositorio general de ficheros aceptados en ACCEPTED_DIR
 #
 def moderateContent():
-    moderateFiles=[]
+    moderateFiles=[]  #(archivo, user, flag_nuevo)
     for user in os.listdir(USR_ROOT):
         for file in os.listdir(USR_ROOT+"/"+user+"/blog"):
             srcfile=USR_ROOT+"/"+user+"/blog"+"/"+file
-            acceptedfile=MD_ROOT_DIR+"/"+user+"/"+file
+            acceptedfile=ACCEPTED_DIR+"/"+user+"/"+file
             if not os.path.exists(acceptedfile):
-                moderateFiles.append(srcfile)
+                moderateFiles.append((srcfile, user,True))      # articulo nuevo
             else: 
                 if not filecmp.cmp(srcfile,acceptedfile):
-                    moderateFiles.append(srcfile)
+                    moderateFiles.append((srcfile, user,False)) # articulo para actualizar
 
             
     print("Hay "+str(len(moderateFiles))+" pendientes de moderación")
 
     try:
         input("Pulsa 'enter' para iniciar la revisión o Ctrl+C para abandonar\n")
-    except:
-        print()
+    except Exception as err:
+        debug(err)
         return
 
-    for filepath in moderateFiles:
-        os.system("less "+filepath)
+    for filepath,user,newpost in moderateFiles:
+        if newpost:
+            os.system('echo "'+MESSAGE_NEW_POST+'" "$(cat '+filepath+')" | less -c')
+        else:
+            os.system('echo "'+MESSAGE_UPDATE_POST+'" "$(cat '+filepath+')" | less -c')
         try:
             print("¿Aceptas el artículo "+filepath+"? Pulsa")
             opt=input(" [S]i\t[N]o\tCtrl+X para salir\t Cualquier tecla para dejarlo a la espera: ")
             if opt=="S" or opt=="s":
                 print ("Articulo "+filepath+"\t[Aceptado]")
-                ## Copiar el fichero en el repo de articulos aceptados
+                acceptPost(filepath,user)
             if opt=="N" or opt=="n":
                 print ("Articulo "+filepath+"\t[Cancelado]")
                 os.system("nano "+filepath)
-        except:
-            print()
+        except Exception as err:
+            debug(err)
             return
 
 

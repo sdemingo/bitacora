@@ -38,6 +38,12 @@ article.user-index-last-entry{
     margin-bottom:50px;
 }
 
+.meta a{
+    font-size:1em;
+    color:grey;
+    text-decoration:underline;
+}
+
 
 /*
     Estilos para los índices completos de cada usuario
