@@ -6,229 +6,33 @@ import random
 import re
 import shutil
 from string import Template
-from bs4 import BeautifulSoup
 from datetime import datetime
 from pathlib import Path
-import markdown
-import filecmp
 
 
-
-HTML_ROOT_DIR="./htmltest"  # html 
-ACCEPTED_DIR="./mdtest"      # markdown accepted files
 USR_ROOT="./usrtest"      # markdown dratf files (must be /home)
-HTML_TEMPLATES="./templates"
-
-MESSAGE_NEW_POST="\n\n\t ========= ARTÍCULO NUEVO ========= \n\n"
-MESSAGE_UPDATE_POST="\n\n\t ========= ARTÍCULO PARA ACTUALIZAR  ========= \n\n"
-
 DEBUG_MODE=True
+USER=os.getlogin()
 
-#
-# En este array guardamos todos los articulos procesados en forma
-# de tuplas. Cada tupla está formada por (ruta del artículo, usuario, fecha)
-#
-posts=[]
+MD_TEMPLATE="""> Borrador: no publicar todavía
 
+# Título de tu artículo
+
+Texto de tu artículo
+"""
 
 def debug(error):
     if DEBUG_MODE: print(err)
 
-#
-# Crea una página de índice con los úĺtimos artículos de todos
-# los usuarios. Esta sería la portada general del blog
-#
-def createMainBlogIndex(limit=10):
-    indexContent=""
-    i=0
-    posts.sort(key=lambda t:t[2],reverse=True)
-    for post in posts:
-        path=post[0]
-        author=post[1]
-        filecontent=Path(HTML_ROOT_DIR+"/"+path).read_text()
-        url=path
-        title,summary = getTitleAndSummaryFromArticle(filecontent)
-        sdate=getDateFromString(os.path.basename(path).strip(".html"))
-        pdate=sdate.strftime("%d/%m/%Y")
-        with open(HTML_TEMPLATES+"/main-index-entry.html") as t:
-                template=Template(t.read())
-                newitem=template.substitute(title=title,url=url,
-                author=author,date=pdate,summary=summary)
-        indexContent+=newitem
-        i+=1
-        if (i==limit):
-            break
-
-    print ("Creating general /index.html")
-    with open(HTML_TEMPLATES+"/main-index.html") as t:
-        template=Template(t.read())
-        html=template.substitute(index=indexContent)
-        with open(HTML_ROOT_DIR+"/index.html","w") as f:
-            f.write(html)
-            f.close()
-
 
 #
-# Extra el título y el resumen (primer párrafo) de un contenido
-# html usando el scrapper 
+# Extrae el título de un artículo en markdown
 #
-def getTitleAndSummaryFromArticle(filecontent):
-    soup = BeautifulSoup(filecontent, "html.parser")
-    title=soup.select("#article-content h1")
-    if len(title)>0:
-        title=title[0].text
-    else:
-        title=""
-    summary=soup.find("p").text
-    return title,summary
-
-
-
-#
-# Crea una página de index que enlaza los ficheros contenidos
-# en ese directorio añadiendo el resumen a cada artículo
-#
-def createMainIndexFrom(user,limit=5):
-    indexContent=""
-    i=0
-    files=os.listdir(HTML_ROOT_DIR+"/"+user)
-    files.sort(reverse=True)
-    for filename in os.listdir(HTML_ROOT_DIR+"/"+user):
-        if filename=="index.html":
-            continue
-        filecontent=Path(HTML_ROOT_DIR+"/"+user+"/"+filename).read_text()
-        url=filename
-        title,summary = getTitleAndSummaryFromArticle(filecontent)
-        sdate=getDateFromString(filename.strip(".html"))
-        pdate=sdate.strftime("%d/%m/%Y")
-        with open(HTML_TEMPLATES+"/user-index-last-entry.html") as t:
-                template=Template(t.read())
-                newitem=template.substitute(title=title,url=url,
-                author=user,date=pdate,summary=summary)
-        indexContent+=newitem
-        i+=1
-        if (i==limit):
-            break
-
-    print ("Creating "+user+"/index.html")
-    with open(HTML_TEMPLATES+"/user-index-last.html") as t:
-        template=Template(t.read())
-        html=template.substitute(user=user,index=indexContent)
-        with open(HTML_ROOT_DIR+"/"+user+"/index.html","w") as f:
-            f.write(html)
-            f.close()
-
-
-#
-# Crea la página con el indice total de todos los articulos
-# creados por un usuario. Esta vez sin resumen. Solo mostrando
-# la fecha de cada uno de ellos
-#
-def createFullIndexFrom(user):
-    indexContent=""
-    files=os.listdir(HTML_ROOT_DIR+"/"+user)
-    files.sort(reverse=True)
-    for filename in files:
-        if (filename=="index.html") or (filename=="index-all.html"):
-            continue
-
-        filecontent=Path(HTML_ROOT_DIR+"/"+user+"/"+filename).read_text()
-        url=filename
-        title,summary = getTitleAndSummaryFromArticle(filecontent)
-        sdate=getDateFromString(filename.strip(".html"))
-        pdate=sdate.strftime("%d/%m/%Y")
-        with open(HTML_TEMPLATES+"/user-index-all-entry.html") as t:
-                template=Template(t.read())
-                newitem=template.substitute(title=title,url=url,date=pdate)
-        indexContent+=newitem
-
-        # Añado el artículo al array general
-        posts.append((user+"/"+filename,user,sdate))
-
-    print ("Creating "+user+"/index-all.html")
-    with open(HTML_TEMPLATES+"/user-index-all.html") as t:
-        template=Template(t.read())
-        html=template.substitute(user=user,index=indexContent)
-        with open(HTML_ROOT_DIR+"/"+user+"/index-all.html","w") as f:
-            f.write(html)
-            f.close()    
-
-
 def extractTitleFromMD(mdcontent):
     regex = r"^# (.+)"
     test_str=mdcontent
     matches = re.search(regex, test_str, re.MULTILINE)
     return matches.groups()[0]
-
-
-
-
-# 
-# Esta función publica el contenido aceptado de un usuario convirtiéndolos en
-# HTML y colocándolos en el directorio correspondiente i indicado en
-# HTML_ROOT_DIR
-#
-def publishUserContent(user,template):
-    print ("Generating HTML content from "+user)
-    for filename in os.listdir(ACCEPTED_DIR+"/"+user):
-        with open(ACCEPTED_DIR+"/"+user+"/"+filename) as f:
-            md=f.read()
-            title=extractTitleFromMD(md)
-            htmlpost = markdown.markdown(md)
-            bname=createRandomDateString()
-            date=getDateFromString(bname).strftime("%d/%m/%Y")
-            #
-            # Ojo!!!!!! : aqui deberia generar el nombre del html 
-            # segun la fecha de publicación actual
-            #
-            title,summary = getTitleAndSummaryFromArticle(htmlpost)
-            html=template.substitute(content=htmlpost,user=user,date=date)
-            with open(HTML_ROOT_DIR+"/"+user+"/"+bname+".html","w") as h:
-                h.write(html)
-                h.close()
-                f.close()
-
-
-#
-# Esta función publica el contenido de todos los usuarios
-# y crea todos los índices de los usuarios
-#
-def publishAllContent():
-    contentTemplate=""
-    with open(HTML_TEMPLATES+"/user-full-post.html") as t:
-        contentTemplate=Template(t.read())
-        if contentTemplate=="":
-            return
-    
-    os.system("rm -r "+HTML_ROOT_DIR)
-    os.system("mkdir -p "+HTML_ROOT_DIR)
-    for user in os.listdir(ACCEPTED_DIR):
-        os.system("mkdir -p "+HTML_ROOT_DIR+"/"+user)
-        publishUserContent(user,contentTemplate)
-        createMainIndexFrom(user)
-        createFullIndexFrom(user)
-
-    os.system("cp -r ./resources "+HTML_ROOT_DIR)
-    createMainBlogIndex()
-
-
-#
-# Acepta el artículo moviéndolo desde el espacio personal del usuario
-# al repositorio de artículos aceptados
-#
-def acceptPost(srcpath,user):
-    try:
-        #os.makedirs(ACCEPTED_DIR)
-        os.makedirs(ACCEPTED_DIR+"/"+user)
-    except FileExistsError:
-        pass
-
-    filename=os.path.basename(srcpath)
-    dstpath=ACCEPTED_DIR+"/"+user+"/"+filename
-    shutil.copyfile(srcpath, dstpath)
-
-
-
 
 #
 # Crea una fecha aleatoria en formato string
@@ -247,59 +51,49 @@ def getDateFromString(datestr):
     return datetime.strptime(datestr,"%Y%m%d")
 
 
+#
+# Muestra el índice de artículos publicados por
+# un usuario. El nombre del fichero y el título
+#
+def showIndexFromUser():
+    files=os.listdir(USR_ROOT+"/"+USER+"/blog")
+    files.sort(reverse=True)
+    print ("Archivo\t\tTítulo del artículo")
+    print ("=======\t\t===================")
+    for filename in files:
+        if (filename=="img"):
+            continue
+
+        filecontent=Path(USR_ROOT+"/"+USER+"/blog/"+filename).read_text()
+        title = extractTitleFromMD(filecontent)
+        print ("{file}\t{title}".format(file=filename, title=title))
+
+
 
 #
-# Traspasa ficheros desde los directorios personales de los usuarios
-# al repositorio general de ficheros aceptados en ACCEPTED_DIR
+# Crea un fichero en blanco a partir de una plantilla
+# guardada en el string POST_TEMPLATE
 #
-def moderateContent():
-    moderateFiles=[]  #(archivo, user, flag_nuevo)
-    for user in os.listdir(USR_ROOT):
-        for file in os.listdir(USR_ROOT+"/"+user+"/blog"):
-            srcfile=USR_ROOT+"/"+user+"/blog"+"/"+file
-            acceptedfile=ACCEPTED_DIR+"/"+user+"/"+file
-            if not os.path.exists(acceptedfile):
-                moderateFiles.append((srcfile, user,True))      # articulo nuevo
-            else: 
-                if not filecmp.cmp(srcfile,acceptedfile):
-                    moderateFiles.append((srcfile, user,False)) # articulo para actualizar
+def createNewPost():
+    now=datetime.now()
+    dir=os.environ.get("HOME")+"/blog"
+    os.system("mkdir -p "+dir)
+    filename=now.strftime("%Y%m%d.md")
+    with open(dir+"/"+filename,"w") as f:
+        f.write(MD_TEMPLATE)
+        f.close()
+    
 
-            
-    print("Hay "+str(len(moderateFiles))+" pendientes de moderación")
-
-    try:
-        input("Pulsa 'enter' para iniciar la revisión o Ctrl+C para abandonar\n")
-    except Exception as err:
-        debug(err)
-        return
-
-    for filepath,user,newpost in moderateFiles:
-        if newpost:
-            os.system('echo "'+MESSAGE_NEW_POST+'" "$(cat '+filepath+')" | less -c')
-        else:
-            os.system('echo "'+MESSAGE_UPDATE_POST+'" "$(cat '+filepath+')" | less -c')
-        try:
-            print("¿Aceptas el artículo "+filepath+"? Pulsa")
-            opt=input(" [S]i\t[N]o\tCtrl+X para salir\t Cualquier tecla para dejarlo a la espera: ")
-            if opt=="S" or opt=="s":
-                print ("Articulo "+filepath+"\t[Aceptado]")
-                acceptPost(filepath,user)
-            if opt=="N" or opt=="n":
-                print ("Articulo "+filepath+"\t[Cancelado]")
-                os.system("nano "+filepath)
-        except Exception as err:
-            debug(err)
-            return
 
 
 if __name__=='__main__':
     if len(sys.argv)<2:
-        print ("\t\t bitacora [ --build | --moderate ] ")
+        print ("\t\t zine [ --list | --new ] ")
         sys.exit(0)
 
-    if sys.argv[1]=="--build":
-        publishAllContent()
+    if sys.argv[1]=="--list":
+        showIndexFromUser()
 
 
-    if sys.argv[1]=="--moderate":
-        moderateContent()
+    if sys.argv[1]=="--new":
+        createNewPost()
