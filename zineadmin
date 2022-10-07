@@ -27,6 +27,7 @@ USR_ROOT="./usrtest"      # markdown dratf files (must be /home)
 
 HTML_TEMPLATES=INSTALL_PATH+"/templates"
 CSS_FILE=INSTALL_PATH+"/resources/estilo.css"
+FONTS=INSTALL_PATH+"/resources/fonts"
 
 
 MESSAGE_NEW_POST="\n\n\t ========= ARTÍCULO NUEVO ========= \n\n"
@@ -55,7 +56,7 @@ def createMainBlogIndex(limit=10):
     for post in posts:
         path=post[0]
         author=post[1]
-        filecontent=Path(HTML_ROOT_DIR+"/"+path).read_text()
+        filecontent=Path(HTML_ROOT_DIR+"/users/"+path).read_text()
         url=path
         title,summary = getTitleAndSummaryFromArticle(filecontent)
         sdate=getDateFromString(os.path.basename(path).strip(".html"))
@@ -101,12 +102,12 @@ def getTitleAndSummaryFromArticle(filecontent):
 def createMainIndexFrom(user,limit=5):
     indexContent=""
     i=0
-    files=os.listdir(HTML_ROOT_DIR+"/"+user)
+    files=os.listdir(HTML_ROOT_DIR+"/users/"+user)
     files.sort(reverse=True)
-    for filename in os.listdir(HTML_ROOT_DIR+"/"+user):
+    for filename in os.listdir(HTML_ROOT_DIR+"/users/"+user):
         if filename=="index.html":
             continue
-        filecontent=Path(HTML_ROOT_DIR+"/"+user+"/"+filename).read_text()
+        filecontent=Path(HTML_ROOT_DIR+"/users/"+user+"/"+filename).read_text()
         url=filename
         title,summary = getTitleAndSummaryFromArticle(filecontent)
         sdate=getDateFromString(filename.strip(".html"))
@@ -124,7 +125,7 @@ def createMainIndexFrom(user,limit=5):
     with open(HTML_TEMPLATES+"/user-index-last.html") as t:
         template=Template(t.read())
         html=template.substitute(user=user,index=indexContent)
-        with open(HTML_ROOT_DIR+"/"+user+"/index.html","w") as f:
+        with open(HTML_ROOT_DIR+"/users/"+user+"/index.html","w") as f:
             f.write(html)
             f.close()
 
@@ -136,13 +137,13 @@ def createMainIndexFrom(user,limit=5):
 #
 def createFullIndexFrom(user):
     indexContent=""
-    files=os.listdir(HTML_ROOT_DIR+"/"+user)
+    files=os.listdir(HTML_ROOT_DIR+"/users/"+user)
     files.sort(reverse=True)
     for filename in files:
         if (filename=="index.html") or (filename=="index-all.html"):
             continue
 
-        filecontent=Path(HTML_ROOT_DIR+"/"+user+"/"+filename).read_text()
+        filecontent=Path(HTML_ROOT_DIR+"/users/"+user+"/"+filename).read_text()
         url=filename
         title,summary = getTitleAndSummaryFromArticle(filecontent)
         sdate=getDateFromString(filename.strip(".html"))
@@ -159,7 +160,7 @@ def createFullIndexFrom(user):
     with open(HTML_TEMPLATES+"/user-index-all.html") as t:
         template=Template(t.read())
         html=template.substitute(user=user,index=indexContent)
-        with open(HTML_ROOT_DIR+"/"+user+"/index-all.html","w") as f:
+        with open(HTML_ROOT_DIR+"/users/"+user+"/index-all.html","w") as f:
             f.write(html)
             f.close()    
 
@@ -189,7 +190,7 @@ def publishUserContent(user,template):
             pdate=sdate.strftime("%Y%m%d")
             title,summary = getTitleAndSummaryFromArticle(htmlpost)
             html=template.substitute(content=htmlpost,user=user,date=sdate.strftime("%d/%m/%Y"))
-            with open(HTML_ROOT_DIR+"/"+user+"/"+pdate+".html","w") as h:
+            with open(HTML_ROOT_DIR+"/users/"+user+"/"+pdate+".html","w") as h:
                 h.write(html)
                 h.close()
                 f.close()
@@ -237,13 +238,15 @@ def publishAllContent():
     os.system("mkdir -p "+HTML_ROOT_DIR)
     os.system("mkdir -p "+HTML_ROOT_DIR+"/resources")
     os.system("mkdir -p "+HTML_ROOT_DIR+"/static")
+    os.system("mkdir -p "+HTML_ROOT_DIR+"/users")
     for user in os.listdir(ACCEPTED_DIR):
-        os.system("mkdir -p "+HTML_ROOT_DIR+"/"+user)
+        os.system("mkdir -p "+HTML_ROOT_DIR+"/users/"+user)
         publishUserContent(user,contentTemplate)
         createMainIndexFrom(user)
         createFullIndexFrom(user)
 
     os.system("cp "+CSS_FILE+" "+HTML_ROOT_DIR+"/resources")
+    os.system("cp -r "+FONTS+" "+HTML_ROOT_DIR+"/resources")
     publishStaticContent()
     createMainBlogIndex()
 
