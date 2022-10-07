@@ -12,12 +12,15 @@ from pathlib import Path
 import markdown
 import filecmp
 
-
+INSTALL_PATH="."
 
 HTML_ROOT_DIR="./htmltest"  # html 
 ACCEPTED_DIR="./mdtest"      # markdown accepted files
 USR_ROOT="./usrtest"      # markdown dratf files (must be /home)
-HTML_TEMPLATES="./templates"
+
+HTML_TEMPLATES=INSTALL_PATH+"/templates"
+CSS_FILE=INSTALL_PATH+"/resources/estilo.css"
+STATIC_FILES=INSTALL_PATH+"/static"
 
 MESSAGE_NEW_POST="\n\n\t ========= ARTÍCULO NUEVO ========= \n\n"
 MESSAGE_UPDATE_POST="\n\n\t ========= ARTÍCULO PARA ACTUALIZAR  ========= \n\n"
@@ -185,6 +188,33 @@ def publishUserContent(user,template):
                 f.close()
 
 
+
+# 
+# Esta función publica el contenido estático de resources/static
+#
+def publishStaticContent():
+    print ("Generating static content")
+    template=""
+    with open(HTML_TEMPLATES+"/static-post.html") as t:
+        template=Template(t.read())
+        if template=="":
+            return
+
+    for filename in os.listdir(STATIC_FILES):
+        with open(STATIC_FILES+"/"+filename) as f:
+            md=f.read()
+            title=extractTitleFromMD(md)
+            htmlpost = markdown.markdown(md)
+            htmlname=filename.strip(".md")
+            html=template.substitute(content=htmlpost)
+            with open(HTML_ROOT_DIR+"/static/"+htmlname+".html","w") as h:
+                h.write(html)
+                h.close()
+                f.close()
+
+
+
+
 #
 # Esta función publica el contenido de todos los usuarios
 # y crea todos los índices de los usuarios
@@ -198,13 +228,16 @@ def publishAllContent():
     
     os.system("rm -r "+HTML_ROOT_DIR)
     os.system("mkdir -p "+HTML_ROOT_DIR)
+    os.system("mkdir -p "+HTML_ROOT_DIR+"/resources")
+    os.system("mkdir -p "+HTML_ROOT_DIR+"/static")
     for user in os.listdir(ACCEPTED_DIR):
         os.system("mkdir -p "+HTML_ROOT_DIR+"/"+user)
         publishUserContent(user,contentTemplate)
         createMainIndexFrom(user)
         createFullIndexFrom(user)
 
-    os.system("cp -r ./resources "+HTML_ROOT_DIR)
+    os.system("cp "+CSS_FILE+" "+HTML_ROOT_DIR+"/resources")
+    publishStaticContent()
     createMainBlogIndex()
 
 
@@ -225,14 +258,6 @@ def acceptPost(srcpath,user):
 
 
 
-#
-# Crea una fecha aleatoria en formato string
-#
-# def createRandomDateString():
-#     randay=str(random.randrange(1,27)).zfill(2)
-#     randmonth=str(random.randrange(1,12)).zfill(2)
-#     randyear=str(random.randrange(2017,2022))
-#     return randyear+randmonth+randay
 
 #
 # Retorna un objeto fecha a partir de un string
