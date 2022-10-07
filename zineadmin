@@ -12,15 +12,22 @@ from pathlib import Path
 import markdown
 import filecmp
 
+## Ruta de instalación de zine
 INSTALL_PATH="."
 
-HTML_ROOT_DIR="./htmltest"  # html 
-ACCEPTED_DIR="./mdtest"      # markdown accepted files
+## Lugar de publicación de los ficheros html
+HTML_ROOT_DIR="./htmltest" 
+
+## Lugar del SF donde están los artículos aceptados y listos para publicar
+ZINE_REPO="./mdtest"
+ACCEPTED_DIR=ZINE_REPO+"/users"    
+STATIC_FILES=ZINE_REPO+"/static"
+
 USR_ROOT="./usrtest"      # markdown dratf files (must be /home)
 
 HTML_TEMPLATES=INSTALL_PATH+"/templates"
 CSS_FILE=INSTALL_PATH+"/resources/estilo.css"
-STATIC_FILES=INSTALL_PATH+"/static"
+
 
 MESSAGE_NEW_POST="\n\n\t ========= ARTÍCULO NUEVO ========= \n\n"
 MESSAGE_UPDATE_POST="\n\n\t ========= ARTÍCULO PARA ACTUALIZAR  ========= \n\n"
@@ -177,7 +184,7 @@ def publishUserContent(user,template):
         with open(ACCEPTED_DIR+"/"+user+"/"+filename) as f:
             md=f.read()
             title=extractTitleFromMD(md)
-            htmlpost = markdown.markdown(md)
+            htmlpost = markdown.markdown(md,extensions=['tables','fenced_code'])
             sdate=getDateFromString(filename.strip(".md"))
             pdate=sdate.strftime("%Y%m%d")
             title,summary = getTitleAndSummaryFromArticle(htmlpost)

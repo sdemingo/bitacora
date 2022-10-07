@@ -8,10 +8,14 @@ html{
 }
 
 body{
-    font-family: 'Courier New', Courier, monospace;
+    /*font-family: 'Courier New', Courier, monospace;*/
+    font-family: Verdana, sans-serif;
     min-height: 100%;
 }
 
+/*
+    Cabecera principal
+*/
 
 header{
     background:#00251a; 
@@ -19,10 +23,22 @@ header{
     top:0;
     height:150px;}
 
-h1{
+header h1{
     padding-top:50px;
     text-align:center;
 }
+
+header h2{
+    font-size:0.8em;
+    margin-right:40px;
+    margin-top:20px;
+    text-align:right;
+    font-weight: normal;
+}
+
+/*
+    Barra de navegación
+*/
 
 nav{
     width:60%;
@@ -57,6 +73,67 @@ footer{
     text-align:center;
 }
 
+
+/*
+    Elementos generales
+*/
+
+.article-content a{
+    color:#373737;
+}
+
+.article-content a:visited{
+    color:#373737;
+}
+
+.article-content p{
+    margin-top:10px;
+}
+.article-content ul{
+    margin:10px;
+}
+
+.article-content ul li{
+    margin-left:10px;
+}
+
+.article-content code{
+    color:#373737;
+    font-size:1.2em;
+}
+
+.article-content pre{
+    overflow-x:auto;
+}
+
+.article-content table{
+    margin:20px auto 20px auto;
+    border:1px solid #373737;
+}
+
+.article-content td{
+    margin:20px auto 20px auto;
+    border:1px solid #373737;
+    padding:0px 10px 0px 10px;
+}
+
+.article-content blockquote{
+    padding-left:10px;
+    border-left:4px solid  #9e9d9d;
+    margin:20px;
+    font-style: italic;
+}
+
+.article-content img{
+    max-width:70%;
+    /*margin:20px auto 20px auto;*/
+    display: block;
+    float: none;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top:20px;
+    margin-bottom:20px;
+}
 
 /*
     Estilos para los índices de últimos artículos
@@ -101,6 +178,7 @@ footer{
 
 .meta{
     color:#373737;
+    font-size:0.8em;
 }
 
 .meta a{
@@ -157,7 +235,6 @@ article.user-index-last-entry{
 #article-content h1{
     text-align:left;
     color:#00251a; 
-    margin-top:-30px;
     margin-bottom:30px;
 }
 
