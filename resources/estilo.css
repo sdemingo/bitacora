@@ -1,10 +1,32 @@
-body{
-    font-family: 'Courier New', Courier, monospace;
-    width:50%;
-    margin:0 auto;
+*{
+    margin:0;
+    padding:0;
 }
 
+html{
+    height:100%;
+}
+
+body{
+    font-family: 'Courier New', Courier, monospace;
+    min-height: 100%;
+}
+
+
+header{
+    background:#00251a; 
+    color:#b9f6ca;
+    top:0;
+    height:150px;}
+
 h1{
+    padding-top:50px;
+    text-align:center;
+}
+
+nav{
+    width:60%;
+    margin:40px auto 40px auto;
     text-align:center;
 }
 
@@ -14,13 +36,47 @@ nav li{
     margin-left:20px;
 }
 
+nav h2{
+    color:#00251a; 
+    margin-bottom:30px;
+}
+
+nav a{
+    color:#373737;
+}
+
+body > section{
+    min-height: calc(100vh - 150px - 50px);
+}
+
+footer{
+    height:50px;
+    padding-top:40px;
+    background:#00251a; 
+    color:#b9f6ca;
+    text-align:center;
+}
+
 
 /*
     Estilos para los índices de últimos artículos
 */
-.user-index-last-entry a{
+.lasts-posts, .all-posts, .article-content{
+    width:60%;
+    margin:0 auto 50px auto;
+    padding:30px;
+    border:1px double #004d40;
+    border-radius:10px;
+}
+
+.user-index-last-entry p{
+    margin:0;
+    padding:0;
+}
+
+.user-index-last-entry .title a{
     font-size:1.3em;
-    color:black;
+    color:#b9f6ca;
     font-weight: bold;
     text-decoration:none;
 }
@@ -29,19 +85,54 @@ nav li{
     text-decoration:none;
 }
 
+
+.user-index-last-entry .title{
+    padding:5px;
+}
+
 .user-index-last-entry .meta{
-    font-size:0.9em;
-    color:grey;
+    color:#373737;
+    background-color:white;
+    margin:0px;
+    padding-top:15px;
+    padding-bottom:15px;
+    width:100%;
+}
+
+.meta{
+    color:#373737;
+}
+
+.meta a{
+    color:inherit;
+    text-decoration:underline;
+}
+
+.meta a:visited{
+    color:inherit;
+}
+
+.read-more{
+    font-size:0.8em;
+    text-align:right;
+}
+
+.sign{
+    margin-top:50px;
+    text-align:right;
 }
 
 article.user-index-last-entry{
     margin-bottom:50px;
+    border:0px solid #004d40;
+    border-bottom:0px;
+    border-radius:5px;
+    background-color: #004d40;
 }
 
-.meta a{
-    font-size:1em;
-    color:grey;
-    text-decoration:underline;
+.user-index-last-entry .summary{
+    background-color:white;
+    color:black;
 }
 
 
@@ -54,6 +145,10 @@ article.user-index-last-entry{
 }
 
 
+#user-index{
+    border:0px;
+}
+
 
 
 /*
@@ -61,4 +156,10 @@ article.user-index-last-entry{
 */
 #article-content h1{
     text-align:left;
+    color:#00251a; 
+    margin-top:-30px;
+    margin-bottom:30px;
 }
+
+
+

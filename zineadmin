@@ -293,7 +293,7 @@ def moderateContent():
 
 if __name__=='__main__':
     if len(sys.argv)<2:
-        print ("\t\t bitacora [ --build | --moderate ] ")
+        print ("\t\t zineadmin [ --build | --moderate ] ")
         sys.exit(0)
 
     if sys.argv[1]=="--build":
