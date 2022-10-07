@@ -175,15 +175,11 @@ def publishUserContent(user,template):
             md=f.read()
             title=extractTitleFromMD(md)
             htmlpost = markdown.markdown(md)
-            bname=createRandomDateString()
-            date=getDateFromString(bname).strftime("%d/%m/%Y")
-            #
-            # Ojo!!!!!! : aqui deberia generar el nombre del html 
-            # segun la fecha de publicación actual
-            #
+            sdate=getDateFromString(filename.strip(".md"))
+            pdate=sdate.strftime("%Y%m%d")
             title,summary = getTitleAndSummaryFromArticle(htmlpost)
-            html=template.substitute(content=htmlpost,user=user,date=date)
-            with open(HTML_ROOT_DIR+"/"+user+"/"+bname+".html","w") as h:
+            html=template.substitute(content=htmlpost,user=user,date=sdate.strftime("%d/%m/%Y"))
+            with open(HTML_ROOT_DIR+"/"+user+"/"+pdate+".html","w") as h:
                 h.write(html)
                 h.close()
                 f.close()
@@ -232,11 +228,11 @@ def acceptPost(srcpath,user):
 #
 # Crea una fecha aleatoria en formato string
 #
-def createRandomDateString():
-    randay=str(random.randrange(1,27)).zfill(2)
-    randmonth=str(random.randrange(1,12)).zfill(2)
-    randyear=str(random.randrange(2017,2022))
-    return randyear+randmonth+randay
+# def createRandomDateString():
+#     randay=str(random.randrange(1,27)).zfill(2)
+#     randmonth=str(random.randrange(1,12)).zfill(2)
+#     randyear=str(random.randrange(2017,2022))
+#     return randyear+randmonth+randay
 
 #
 # Retorna un objeto fecha a partir de un string
