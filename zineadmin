@@ -65,7 +65,7 @@ def createMainBlogIndex(limit=10):
                 template=Template(t.read())
                 newitem=template.substitute(title=title,url=url,
                 author=author,date=pdate,summary=summary)
-        indexContent+=newitem
+        indexContent=indexContent+newitem
         i+=1
         if (i==limit):
             break
@@ -103,7 +103,8 @@ def createMainIndexFrom(user,limit=5):
     indexContent=""
     i=0
     files=os.listdir(HTML_ROOT_DIR+"/users/"+user)
-    files.sort(reverse=True)
+    #files.sort(reverse=True)
+    files.sort()
     for filename in os.listdir(HTML_ROOT_DIR+"/users/"+user):
         if filename=="index.html":
             continue
@@ -116,7 +117,7 @@ def createMainIndexFrom(user,limit=5):
                 template=Template(t.read())
                 newitem=template.substitute(title=title,url=url,
                 author=user,date=pdate,summary=summary)
-        indexContent+=newitem
+        indexContent=newitem+indexContent
         i+=1
         if (i==limit):
             break
