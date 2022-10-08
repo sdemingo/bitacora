@@ -22,8 +22,8 @@ body{
 */
 
 header{
-    background:#00251a; 
-    color:#b9f6ca;
+    background:white;
+    color:#053a2a;
     top:0;
     height:150px;}
 
@@ -35,10 +35,11 @@ header h1{
 }
 
 header h2{
+    font-family: 'Philosopher';
     font-size:0.8em;
-    margin-right:80px;
+    /*margin-right:80px;*/
     margin-top:20px;
-    text-align:right;
+    text-align:center;
     font-weight: normal;
 }
 
@@ -59,8 +60,14 @@ nav li{
 }
 
 nav h2{
+    font-family: 'Philosopher';
     color:#00251a; 
     margin-bottom:30px;
+    border:1px double #053a2a;
+    border-radius:10px;
+    text-align:center;
+    padding:20px 0px 20px 0px;
+
 }
 
 nav a{
@@ -74,8 +81,8 @@ body > section{
 footer{
     height:50px;
     padding-top:40px;
-    background:#00251a; 
-    color:#b9f6ca;
+    background:#053a2a;
+    color:white;
     text-align:center;
 }
 
@@ -132,7 +139,6 @@ footer{
 
 .article-content img{
     max-width:70%;
-    /*margin:20px auto 20px auto;*/
     display: block;
     float: none;
     margin-left: auto;
@@ -148,7 +154,7 @@ footer{
     width:60%;
     margin:0 auto 50px auto;
     padding:30px;
-    border:1px double #004d40;
+    border:1px double #053a2a;
     border-radius:10px;
 }
 
@@ -159,7 +165,7 @@ footer{
 
 .user-index-last-entry .title a{
     font-size:1.3em;
-    color:#b9f6ca;
+    color:white;
     font-weight: bold;
     text-decoration:none;
 }
@@ -208,10 +214,10 @@ footer{
 
 article.user-index-last-entry{
     margin-bottom:50px;
-    border:0px solid #004d40;
+    border:0px solid #053a2a;
     border-bottom:0px;
     border-radius:5px;
-    background-color: #004d40;
+    background-color: #053a2a;
 }
 
 .user-index-last-entry .summary{
@@ -228,6 +234,10 @@ article.user-index-last-entry{
     margin-right:10px;
 }
 
+.user-index-all-entry a, a:visited{
+    color:#373737;
+    text-decoration: none;
+}
 
 #user-index{
     border:0px;
