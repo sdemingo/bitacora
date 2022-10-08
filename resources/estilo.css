@@ -230,17 +230,25 @@ article.user-index-last-entry{
     Estilos para los índices completos de cada usuario
 */
 
-.user-index-all-entry span{
+.user-index-all-entry,.main-index-all-entry span{
     margin-right:10px;
 }
 
-.user-index-all-entry a, a:visited{
+.user-index-all-entry,.main-index-all-entry a, a:visited{
     color:#373737;
     text-decoration: none;
 }
 
-#user-index{
+.all-posts{
     border:0px;
+}
+
+li.main-index-all-entry span{
+    display:inline-block;
+}
+
+li.main-index-all-entry span.user{
+    width:100px;    
 }
 
 

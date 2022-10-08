@@ -79,6 +79,34 @@ def createMainBlogIndex(limit=10):
             f.close()
 
 
+
+def createFullBlogIndex():
+    indexContent=""
+    i=0
+    posts.sort(key=lambda t:t[2],reverse=True)
+    for post in posts:
+        path=post[0]
+        author=post[1]
+        filecontent=Path(HTML_ROOT_DIR+"/users/"+path).read_text()
+        url=path
+        title,summary = getTitleAndSummaryFromArticle(filecontent)
+        sdate=getDateFromString(os.path.basename(path).strip(".html"))
+        pdate=sdate.strftime("%d/%m/%Y")
+        with open(HTML_TEMPLATES+"/main-index-all-entry.html") as t:
+                template=Template(t.read())
+                newitem=template.substitute(title=title,url=url,
+                user=author,date=pdate,summary=summary)
+        indexContent=indexContent+newitem
+
+    print ("Creating general /index.html")
+    with open(HTML_TEMPLATES+"/main-index-all.html") as t:
+        template=Template(t.read())
+        html=template.substitute(index=indexContent)
+        with open(HTML_ROOT_DIR+"/index-all.html","w") as f:
+            f.write(html)
+            f.close()
+
+
 #
 # Extra el título y el resumen (primer párrafo) de un contenido
 # html usando el scrapper 
@@ -132,7 +160,7 @@ def createMainIndexFrom(user,limit=5):
 
 
 #
-# Crea la página con el indice total de todos los articulos
+# Crea la página con el indice total de todos los artículos
 # creados por un usuario. Esta vez sin resumen. Solo mostrando
 # la fecha de cada uno de ellos
 #
@@ -250,6 +278,7 @@ def publishAllContent():
     os.system("cp -r "+FONTS+" "+HTML_ROOT_DIR+"/resources")
     publishStaticContent()
     createMainBlogIndex()
+    createFullBlogIndex()
 
 
 #
