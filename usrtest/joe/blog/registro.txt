@@ -1,0 +1,2 @@
+[./usrtest/joe/blog/20191024.md]  ACEPTADO
+[./usrtest/joe/blog/20180728.md]  ACEPTADO

@@ -234,13 +234,23 @@ article.user-index-last-entry{
     margin-right:10px;
 }
 
-.user-index-all-entry,.main-index-all-entry a, a:visited{
+.user-index-all-entry a,.main-index-all-entry a{
+    color:#373737;
+    text-decoration: none;
+}
+
+.user-index-all-entry a:visited,.main-index-all-entry a:visited{
     color:#373737;
     text-decoration: none;
 }
 
 .all-posts{
     border:0px;
+}
+
+
+li.user-index-all-entry span{
+    margin-right:20px;
 }
 
 li.main-index-all-entry span{

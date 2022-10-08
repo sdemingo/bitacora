@@ -1,0 +1,5 @@
+[./usrtest/jack/blog/20170805.md]  RECHAZADO  Contenido inapropiado. Las razones se han incluido en el fichero
+[./usrtest/jack/blog/20180805.md]  ACEPTADO
+[./usrtest/jack/blog/20170805.md]  ACEPTADO
+[./usrtest/jack/blog/20190520.md]  RECHAZADO  Contenido inapropiado. Las razones se han incluido en el fichero
+[./usrtest/jack/blog/20170501.md]  ACEPTADO

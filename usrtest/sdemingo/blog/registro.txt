@@ -1,0 +1,2 @@
+[./usrtest/sdemingo/blog/20170622.md]  ACEPTADO
+[./usrtest/sdemingo/blog/20170910.md]  ACEPTADO

@@ -31,7 +31,8 @@ FONTS=INSTALL_PATH+"/resources/fonts"
 
 
 MESSAGE_NEW_POST="\n\n\t ========= ARTÍCULO NUEVO ========= \n\n"
-MESSAGE_UPDATE_POST="\n\n\t ========= ARTÍCULO PARA ACTUALIZAR  ========= \n\n"
+MESSAGE_UPDATE_POST="\n\n\t ========= ARTÍCULO PARA ACTUALIZAR  ========= \n\t\t(se muestran las diferencias)\n\n"
+ZINE_USERS_LOG_FILE="registro.txt"
 
 DEBUG_MODE=True
 
@@ -43,7 +44,7 @@ posts=[]
 
 
 def debug(error):
-    if DEBUG_MODE: print(err)
+    if DEBUG_MODE and error!=None: print(error)
 
 #
 # Crea una página de índice con los úĺtimos artículos de todos
@@ -194,6 +195,10 @@ def createFullIndexFrom(user):
             f.close()    
 
 
+#
+# Extrae el título de un documento markdown. 
+# Se queda con el texto del primer encabezado
+#
 def extractTitleFromMD(mdcontent):
     regex = r"^# (.+)"
     test_str=mdcontent
@@ -232,22 +237,25 @@ def publishUserContent(user,template):
 def publishStaticContent():
     print ("Generating static content")
     template=""
-    with open(HTML_TEMPLATES+"/static-post.html") as t:
-        template=Template(t.read())
-        if template=="":
-            return
+    try:
+        with open(HTML_TEMPLATES+"/static-post.html") as t:
+            template=Template(t.read())
+            if template=="":
+                return
 
-    for filename in os.listdir(STATIC_FILES):
-        with open(STATIC_FILES+"/"+filename) as f:
-            md=f.read()
-            title=extractTitleFromMD(md)
-            htmlpost = markdown.markdown(md)
-            htmlname=filename.strip(".md")
-            html=template.substitute(content=htmlpost)
-            with open(HTML_ROOT_DIR+"/static/"+htmlname+".html","w") as h:
-                h.write(html)
-                h.close()
-                f.close()
+        for filename in os.listdir(STATIC_FILES):
+            with open(STATIC_FILES+"/"+filename) as f:
+                md=f.read()
+                title=extractTitleFromMD(md)
+                htmlpost = markdown.markdown(md)
+                htmlname=filename.strip(".md")
+                html=template.substitute(content=htmlpost)
+                with open(HTML_ROOT_DIR+"/static/"+htmlname+".html","w") as h:
+                    h.write(html)
+                    h.close()
+                    f.close()
+    except FileNotFoundError as ferr:
+        print ("ERROR: No se encontro fichero: "+str(ferr))
 
 
 
@@ -294,8 +302,22 @@ def acceptPost(srcpath,user):
     filename=os.path.basename(srcpath)
     dstpath=ACCEPTED_DIR+"/"+user+"/"+filename
     shutil.copyfile(srcpath, dstpath)
+    msg="["+srcpath+"]  ACEPTADO"
+    log(USR_ROOT+"/"+user+"/blog/"+ZINE_USERS_LOG_FILE,msg+"\n") 
 
 
+def rejectPost(srcpath,user,comment=""):
+    msg="["+srcpath+"]  RECHAZADO  "+comment
+    log(USR_ROOT+"/"+user+"/blog/"+ZINE_USERS_LOG_FILE, msg+"\n") 
+
+
+def log(logfile, message):
+    try:
+        with open(logfile,"a+") as f:
+            f.write(message)
+            f.close()
+    except Exception as e:
+        print ("ERRROR: Fallo escritura en log: "+logfile)
 
 
 
@@ -316,13 +338,18 @@ def moderateContent():
     moderateFiles=[]  #(archivo, user, flag_nuevo)
     for user in os.listdir(USR_ROOT):
         for file in os.listdir(USR_ROOT+"/"+user+"/blog"):
+            if ((file == ZINE_USERS_LOG_FILE) or (file.index(".md") < 0 )):
+                continue
             srcfile=USR_ROOT+"/"+user+"/blog"+"/"+file
             acceptedfile=ACCEPTED_DIR+"/"+user+"/"+file
+            if (not os.access(srcfile, os.W_OK)):
+                rejectPost(srcfile, user, "Revisa los permisos de acceso de tu artículo. Vuelve a leer el manual de ayuda de Zine")
+                continue
             if not os.path.exists(acceptedfile):
-                moderateFiles.append((srcfile, user,True))      # articulo nuevo
+                moderateFiles.append((srcfile, acceptedfile, user,True))      # articulo nuevo
             else: 
                 if not filecmp.cmp(srcfile,acceptedfile):
-                    moderateFiles.append((srcfile, user,False)) # articulo para actualizar
+                    moderateFiles.append((srcfile, acceptedfile, user, False)) # articulo para actualizar
 
             
     print("Hay "+str(len(moderateFiles))+" pendientes de moderación")
@@ -333,20 +360,21 @@ def moderateContent():
         debug(err)
         return
 
-    for filepath,user,newpost in moderateFiles:
+    for srcpath,acceptpath,user,newpost in moderateFiles:
         if newpost:
-            os.system('echo "'+MESSAGE_NEW_POST+'" "$(cat '+filepath+')" | less -c')
+            os.system('echo -n "'+MESSAGE_NEW_POST+'""$(cat '+srcpath+')" | less -c')
         else:
-            os.system('echo "'+MESSAGE_UPDATE_POST+'" "$(cat '+filepath+')" | less -c')
+            os.system('echo -n "'+MESSAGE_UPDATE_POST+'""$(diff -c '+acceptpath+' '+srcpath+')" | less -c')
         try:
-            print("¿Aceptas el artículo "+filepath+"? Pulsa")
+            print("¿Aceptas el artículo "+srcpath+"? Pulsa")
             opt=input(" [S]i\t[N]o\tCtrl+X para salir\t Cualquier tecla para dejarlo a la espera: ")
             if opt=="S" or opt=="s":
-                print ("Articulo "+filepath+"\t[Aceptado]")
-                acceptPost(filepath,user)
+                print ("Articulo "+srcpath+"\t[Aceptado]")
+                acceptPost(srcpath,user)
             if opt=="N" or opt=="n":
-                print ("Articulo "+filepath+"\t[Cancelado]")
-                os.system("nano "+filepath)
+                print ("Articulo "+srcpath+"\t[Cancelado]")
+                rejectPost(srcpath,user,"Contenido inapropiado. Las razones se han incluido en el fichero")
+                os.system("nano "+srcpath)
         except Exception as err:
             debug(err)
             return
