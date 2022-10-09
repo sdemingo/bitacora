@@ -30,9 +30,10 @@ CSS_FILE=INSTALL_PATH+"/resources/estilo.css"
 FONTS=INSTALL_PATH+"/resources/fonts"
 
 
-MESSAGE_NEW_POST="\n\n\t ========= ARTÍCULO NUEVO ========= \n\n"
-MESSAGE_UPDATE_POST="\n\n\t ========= ARTÍCULO PARA ACTUALIZAR  ========= \n\t\t(se muestran las diferencias)\n\n"
+MESSAGE_NEW_POST="\n\t ========= ARTÍCULO NUEVO ========= \n\n"
+MESSAGE_UPDATE_POST="\n\t ========= ARTÍCULO PARA ACTUALIZAR  ========= \n\n"
 ZINE_USERS_LOG_FILE="registro.txt"
+ZINE_MODERATE_LOG_FILE="moderate-log.txt"
 
 DEBUG_MODE=True
 
@@ -303,18 +304,21 @@ def acceptPost(srcpath,user):
     dstpath=ACCEPTED_DIR+"/"+user+"/"+filename
     shutil.copyfile(srcpath, dstpath)
     msg="["+srcpath+"]  ACEPTADO"
-    log(USR_ROOT+"/"+user+"/blog/"+ZINE_USERS_LOG_FILE,msg+"\n") 
+    log(USR_ROOT+"/"+user+"/blog/"+ZINE_USERS_LOG_FILE,msg) 
+    log(ZINE_MODERATE_LOG_FILE,msg)
+
 
 
 def rejectPost(srcpath,user,comment=""):
     msg="["+srcpath+"]  RECHAZADO  "+comment
-    log(USR_ROOT+"/"+user+"/blog/"+ZINE_USERS_LOG_FILE, msg+"\n") 
+    log(USR_ROOT+"/"+user+"/blog/"+ZINE_USERS_LOG_FILE, msg) 
+    log(ZINE_MODERATE_LOG_FILE,msg)
 
 
 def log(logfile, message):
     try:
         with open(logfile,"a+") as f:
-            f.write(message)
+            f.write(message+"\n")
             f.close()
     except Exception as e:
         print ("ERRROR: Fallo escritura en log: "+logfile)
@@ -361,27 +365,37 @@ def moderateContent():
         return
 
     for srcpath,acceptpath,user,newpost in moderateFiles:
-        if newpost:
-            os.system('echo -n "'+MESSAGE_NEW_POST+'""$(cat '+srcpath+')" | less -c')
-        else:
-            os.system('echo -n "'+MESSAGE_UPDATE_POST+'""$(diff -c '+acceptpath+' '+srcpath+')" | less -c')
-        try:
-            print("¿Aceptas el artículo "+srcpath+"? Pulsa")
-            opt=input(" [S]i\t[N]o\tCtrl+X para salir\t Cualquier tecla para dejarlo a la espera: ")
-            if opt=="S" or opt=="s":
-                print ("Articulo "+srcpath+"\t[Aceptado]")
-                acceptPost(srcpath,user)
-            if opt=="N" or opt=="n":
-                print ("Articulo "+srcpath+"\t[Cancelado]")
-                rejectPost(srcpath,user,"Contenido inapropiado. Las razones se han incluido en el fichero")
-                os.system("nano "+srcpath)
-        except Exception as err:
-            debug(err)
-            return
+        nextpost=False
+        while not nextpost:
+            os.system("clear")
+            if newpost:
+                msg=MESSAGE_NEW_POST+"\tFichero "+srcpath+"\n\tUsuario: "+user+"\n\n"
+                os.system('echo -n "'+msg+'""$(cat '+srcpath+')" | less -c')
+            else:
+                msg=MESSAGE_UPDATE_POST+"\tFichero "+srcpath+"\n\tUsuario: "+user+"\n\n"
+                os.system('echo -n "'+msg+'""$(diff -c '+acceptpath+' '+srcpath+')" | less -c')
+            try:
+                print("¿Aceptas el artículo "+srcpath+"? Pulsa")
+                opt=input(" [S]i\t[N]o\t[I]gnorar\t[V]er de nuevo\t\tCtrl+C para abandonar: ")
+                if opt=="S" or opt=="s":
+                    acceptPost(srcpath,user)
+                    nextpost=True
+                if opt=="N" or opt=="n":
+                    rejectPost(srcpath,user,"Contenido inapropiado. Las razones se han incluido en el fichero")
+                    os.system("nano "+srcpath)
+                    nextpost=True
+                if opt=="I" or opt=="i":
+                    nextpost=True
+
+            except Exception as err:
+                #debug(err)
+                return
+
 
 
 if __name__=='__main__':
-    if len(sys.argv)<2:
+
+    if (len(sys.argv)<2) or (sys.argv[1]!="--build") or (sys.argv[1]!="--moderate"):
         print ("\t\t zineadmin [ --build | --moderate ] ")
         sys.exit(0)
 
