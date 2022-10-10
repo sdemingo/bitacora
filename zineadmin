@@ -23,7 +23,7 @@ HTML_ROOT_DIR="/var/www/html/agora"
 ZINE_REPO="/var/agora" 
 
 ## Directorio donde encontrar los artículos en borrador
-USR_ROOT="/home"
+USR_ROOT="/var/publico"
 
 
 ACCEPTED_DIR=ZINE_REPO+"/users"    
@@ -49,7 +49,8 @@ posts=[]
 
 
 def debug(error):
-    if DEBUG_MODE and error!=None: print(error)
+    if DEBUG_MODE and error!=None:
+        print(error)
 
 #
 # Crea una página de índice con los úĺtimos artículos de todos
@@ -140,7 +141,6 @@ def createMainIndexFrom(user,limit=5):
     indexContent=""
     i=0
     files=os.listdir(HTML_ROOT_DIR+"/users/"+user)
-    #files.sort(reverse=True)
     files.sort()
     for filename in os.listdir(HTML_ROOT_DIR+"/users/"+user):
         if filename=="index.html":
@@ -211,8 +211,19 @@ def extractTitleFromMD(mdcontent):
     regex = r"^# (.+)"
     test_str=mdcontent
     matches = re.search(regex, test_str, re.MULTILINE)
+    if (matches==None):
+        return ""
     return matches.groups()[0]
 
+
+
+def isDraft(mdfile):
+    with open(mdfile,"r") as f:
+        regex = r"^@\+BORRADOR"
+        test_str=f.read()
+        matches = re.search(regex, test_str, re.MULTILINE)
+        return  matches!=None
+    return true
 
 
 
@@ -224,6 +235,8 @@ def extractTitleFromMD(mdcontent):
 def publishUserContent(user,template):
     print ("Generating HTML content from "+user)
     for filename in os.listdir(ACCEPTED_DIR+"/"+user):
+        if filename == "registro.txt":
+            continue
         with open(ACCEPTED_DIR+"/"+user+"/"+filename) as f:
             md=f.read()
             title=extractTitleFromMD(md)
@@ -290,6 +303,7 @@ def publishAllContent():
         createMainIndexFrom(user)
         createFullIndexFrom(user)
 
+    print ("Updating CSS and fonts")
     os.system("cp "+CSS_FILE+" "+HTML_ROOT_DIR+"/resources")
     os.system("cp -r "+FONTS+" "+HTML_ROOT_DIR+"/resources")
     publishStaticContent()
@@ -310,29 +324,22 @@ def acceptPost(srcpath,user):
     filename=os.path.basename(srcpath)
     dstpath=ACCEPTED_DIR+"/"+user+"/"+filename
     shutil.copyfile(srcpath, dstpath)
-    msg="["+srcpath+"]  ACEPTADO"
-    log(USR_ROOT+"/"+user+"/blog/"+ZINE_USERS_LOG_FILE,msg) 
-    log(ZINE_MODERATE_LOG_FILE,msg)
+    log(ACCEPTED_DIR+"/"+user+"/"+ZINE_USERS_LOG_FILE,filename+"  ACEPTADO") 
+    log(ZINE_MODERATE_LOG_FILE, srcpath+"  ACEPTADO")
 
 
 
 def rejectPost(srcpath,user,comment=""):
-    msg="["+srcpath+"]  RECHAZADO  "+comment
-    log(USR_ROOT+"/"+user+"/blog/"+ZINE_USERS_LOG_FILE, msg) 
-    log(ZINE_MODERATE_LOG_FILE,msg)
+    filename=os.path.basename(srcpath)
+    log(ACCEPTED_DIR+"/"+user+"/"+ZINE_USERS_LOG_FILE,filename+"  RECHAZADO  "+comment) 
+    log(ZINE_MODERATE_LOG_FILE,srcpath+"  RECHAZADO  "+comment)
 
 
 def log(logfile, message):
-    changeGrp=False
     try:
-        logpath = Path(logfile)
-        if not logfile.exists():
-            changeGrp=True
         with open(logfile,"a+") as f:
             f.write(message+"\n")
             f.close()
-        if changeGrp:
-            os.system("chgrp "+ZINE_ADMIN_GROUP_NAME+" "+logfile)
     except Exception as e:
         print ("ERRROR: Fallo escritura en log: "+logfile)
 
@@ -354,26 +361,34 @@ def getDateFromString(datestr):
 def moderateContent():
     moderateFiles=[]  #(archivo, user, flag_nuevo)
     for user in os.listdir(USR_ROOT):
-        for file in os.listdir(USR_ROOT+"/"+user+"/blog"):
-            if ((file == ZINE_USERS_LOG_FILE) or (file.index(".md") < 0 )):
+        userdir=USR_ROOT+"/"+user+"/blog"
+        if not os.path.exists(userdir) :
+            continue
+        if (not os.access(userdir, os.R_OK)):
+            print ("ERROR: El usuario "+user+" no permite el acceso a su directorio de artículos")
+            continue
+        
+        for mdfile in os.listdir(userdir):
+            if ((mdfile == ZINE_USERS_LOG_FILE) or (mdfile.index(".md") < 0 )):
                 continue
-            srcfile=USR_ROOT+"/"+user+"/blog"+"/"+file
-            acceptedfile=ACCEPTED_DIR+"/"+user+"/"+file
-            if (not os.access(srcfile, os.W_OK)):
-                rejectPost(srcfile, user, "Revisa los permisos de acceso de tu artículo. Vuelve a leer el manual de ayuda de Zine")
+            srcfile=userdir+"/"+mdfile
+            acceptedfile=ACCEPTED_DIR+"/"+user+"/"+mdfile
+            if (isDraft(srcfile)):
+                continue
+            if (not os.access(srcfile, os.R_OK)):
+                rejectPost(srcfile, user, "Revisa los permisos de acceso de tu artículo. El moderador no tiene acceso al artículo.")
                 continue
             if not os.path.exists(acceptedfile):
                 moderateFiles.append((srcfile, acceptedfile, user,True))      # articulo nuevo
             else: 
                 if not filecmp.cmp(srcfile,acceptedfile):
                     moderateFiles.append((srcfile, acceptedfile, user, False)) # articulo para actualizar
-
-            
-    print("Hay "+str(len(moderateFiles))+" pendientes de moderación")
+ 
 
     try:
+        print("Hay "+str(len(moderateFiles))+" pendientes de moderación")
         input("Pulsa 'enter' para iniciar la revisión o Ctrl+C para abandonar\n")
-    except Exception as err:
+    except KeyboardInterrupt as err:
         debug(err)
         return
 
@@ -401,7 +416,7 @@ def moderateContent():
                     nextpost=True
 
             except Exception as err:
-                #debug(err)
+                debug(err)
                 return
 
 
@@ -414,7 +429,7 @@ if __name__=='__main__':
         print("El grupo "+ZINE_ADMIN_GROUP_NAME+" no existe y debería estar presente. Consulte este problema con el administrador")
         sys.exit(0)
 
-    if (len(sys.argv)<2) and ((sys.argv[1]!="--build") or (sys.argv[1]!="--moderate")):
+    if (len(sys.argv)<2) or ((sys.argv[1]!="--build") and (sys.argv[1]!="--moderate")):
         print ("\t\t zineadmin [ --build | --moderate ] ")
         sys.exit(0)
 

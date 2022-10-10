@@ -9,12 +9,18 @@ from string import Template
 from datetime import datetime
 from pathlib import Path
 
+## Directorio donde encontrar los artículos en borrador
+USR_ROOT="/var/publico"
 
-USR_ROOT="./usrtest"      # markdown dratf files (must be /home)
+## Lugar del SF donde están los artículos aceptados y listos para publicar
+ZINE_REPO="/var/agora" 
+
+
+ACCEPTED_DIR=ZINE_REPO+"/users"    
 DEBUG_MODE=True
-USER=os.getlogin()
+USER=os.environ.get("USER")
 ZINE_ADMIN_GROUP_NAME="zineadm"
-MD_TEMPLATE="""> Borrador: no publicar todavía
+MD_TEMPLATE="""@+BORRADOR
 
 # Título de tu artículo
 
@@ -34,14 +40,6 @@ def extractTitleFromMD(mdcontent):
     matches = re.search(regex, test_str, re.MULTILINE)
     return matches.groups()[0]
 
-#
-# Crea una fecha aleatoria en formato string
-#
-def createRandomDateString():
-    randay=str(random.randrange(1,27)).zfill(2)
-    randmonth=str(random.randrange(1,12)).zfill(2)
-    randyear=str(random.randrange(2017,2022))
-    return randyear+randmonth+randay
 
 #
 # Retorna un objeto fecha a partir de un string
@@ -58,15 +56,15 @@ def getDateFromString(datestr):
 def showIndexFromUser():
     files=os.listdir(USR_ROOT+"/"+USER+"/blog")
     files.sort(reverse=True)
-    print ("Archivo\t\tTítulo del artículo")
-    print ("=======\t\t===================")
+    print ("\tArchivo\t\tTítulo del artículo")
+    print ("\t=======\t\t===================\n")
     for filename in files:
         if (filename=="img"):
             continue
 
         filecontent=Path(USR_ROOT+"/"+USER+"/blog/"+filename).read_text()
         title = extractTitleFromMD(filecontent)
-        print ("{file}\t{title}".format(file=filename, title=title))
+        print ("\t{file}\t{title}".format(file=filename, title=title))
 
 
 
@@ -76,25 +74,46 @@ def showIndexFromUser():
 #
 def createNewPost():
     now=datetime.now()
-    dir=os.environ.get("HOME")+"/blog"
-    os.system("mkdir -p "+dir)
+    dir=USR_ROOT+"/"+USER+"/blog"
+    if not os.path.exists(dir):
+        os.system("mkdir -p "+dir)
+        
     filename=now.strftime("%Y%m%d.md")
     with open(dir+"/"+filename,"w") as f:
         f.write(MD_TEMPLATE)
         f.close()
+        
+    print ("Se ha creado el fichero "+filename+". Usa nano u otro editor para escribirlo")
+    print ("\nEjecuta: nano /home/"+USER+"/pub/blog/"+filename+"\n")
     
 
+def showStat():
+    print ("\tEstado de tus últimos artículos y comentarios del moderador")
+    print ("\t===========================================================\n")
+    try:
+        with open(ACCEPTED_DIR+"/"+USER+"/registro.txt","r") as f:
+            lineas=f.readlines()
+            f.close()
+        for l in lineas:
+            print ("\t"+l)
+        print("\n\n")
 
+    except:
+        print ("\tNo se encontro ningún artículo publicado")
+        
+    
 
 if __name__=='__main__':
 
-    if len(sys.argv)<2:
-        print ("\t\t zine [ --list | --new ] ")
+    if (len(sys.argv)<2) or ((sys.argv[1]!="--new") and (sys.argv[1]!="--list") and (sys.argv[1]!="--stat")):
+        print ("\t\t zine [ --list | --new | --stat ] ")
         sys.exit(0)
 
     if sys.argv[1]=="--list":
         showIndexFromUser()
 
-
     if sys.argv[1]=="--new":
         createNewPost()
+
+    if sys.argv[1]=="--stat":
+        showStat()
