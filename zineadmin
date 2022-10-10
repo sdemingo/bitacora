@@ -14,30 +14,32 @@ import markdown
 import filecmp
 
 ## Ruta de instalación de zine
-INSTALL_PATH="."
+INSTALL_PATH="/opt/zine"
 
 ## Lugar de publicación de los ficheros html
-HTML_ROOT_DIR="./htmltest" 
+HTML_ROOT_DIR="/var/www/html/agora" 
 
 ## Lugar del SF donde están los artículos aceptados y listos para publicar
-ZINE_REPO="./mdtest"
+ZINE_REPO="/var/agora" 
+
+## Directorio donde encontrar los artículos en borrador
+USR_ROOT="./usrtest"      # (must be /home)
+
+
 ACCEPTED_DIR=ZINE_REPO+"/users"    
 STATIC_FILES=ZINE_REPO+"/static"
-
-USR_ROOT="./usrtest"      # markdown dratf files (must be /home)
-
 HTML_TEMPLATES=INSTALL_PATH+"/templates"
 CSS_FILE=INSTALL_PATH+"/resources/estilo.css"
 FONTS=INSTALL_PATH+"/resources/fonts"
-
-
-MESSAGE_NEW_POST="\n\t ========= ARTÍCULO NUEVO ========= \n\n"
-MESSAGE_UPDATE_POST="\n\t ========= ARTÍCULO PARA ACTUALIZAR  ========= \n\n"
 ZINE_USERS_LOG_FILE="registro.txt"
 ZINE_MODERATE_LOG_FILE="moderate-log.txt"
 ZINE_ADMIN_GROUP_NAME="zineadm"
 
-DEBUG_MODE=True
+MESSAGE_NEW_POST="\n\t ========= ARTÍCULO NUEVO ========= \n\n"
+MESSAGE_UPDATE_POST="\n\t ========= ARTÍCULO PARA ACTUALIZAR  ========= \n\n"
+
+DEBUG_MODE=False
+
 
 #
 # En este array guardamos todos los articulos procesados en forma
@@ -83,7 +85,10 @@ def createMainBlogIndex(limit=10):
             f.close()
 
 
-
+#
+# Crea la página con el indice total de todos los artículos
+# Solo mostrando la fecha de cada uno de ellos, el autor y el título
+#
 def createFullBlogIndex():
     indexContent=""
     i=0
@@ -389,8 +394,8 @@ def moderateContent():
                     acceptPost(srcpath,user)
                     nextpost=True
                 if opt=="N" or opt=="n":
-                    rejectPost(srcpath,user,"Contenido inapropiado. Las razones se han incluido en el fichero")
-                    os.system("nano "+srcpath)
+                    comments=input("Escribe brevemente las razón del rechazo: ")
+                    rejectPost(srcpath,user, comments)
                     nextpost=True
                 if opt=="I" or opt=="i":
                     nextpost=True
