@@ -1,3 +1,0 @@
-[./usrtest/jfluis/blog/20180822.md]  ACEPTADO
-[./usrtest/jfluis/blog/20170320.md]  ACEPTADO
-[./usrtest/jfluis/blog/20200523.md]  ACEPTADO
