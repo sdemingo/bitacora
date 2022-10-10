@@ -2,6 +2,7 @@
 
 import sys
 import os
+import grp
 import random
 import re
 import shutil
@@ -34,6 +35,7 @@ MESSAGE_NEW_POST="\n\t ========= ARTÍCULO NUEVO ========= \n\n"
 MESSAGE_UPDATE_POST="\n\t ========= ARTÍCULO PARA ACTUALIZAR  ========= \n\n"
 ZINE_USERS_LOG_FILE="registro.txt"
 ZINE_MODERATE_LOG_FILE="moderate-log.txt"
+ZINE_ADMIN_GROUP_NAME="zineadm"
 
 DEBUG_MODE=True
 
@@ -316,10 +318,16 @@ def rejectPost(srcpath,user,comment=""):
 
 
 def log(logfile, message):
+    changeGrp=False
     try:
+        logpath = Path(logfile)
+        if not logfile.exists():
+            changeGrp=True
         with open(logfile,"a+") as f:
             f.write(message+"\n")
             f.close()
+        if changeGrp:
+            os.system("chgrp "+ZINE_ADMIN_GROUP_NAME+" "+logfile)
     except Exception as e:
         print ("ERRROR: Fallo escritura en log: "+logfile)
 
@@ -394,6 +402,12 @@ def moderateContent():
 
 
 if __name__=='__main__':
+
+    try:
+        grp.getgrnam(ZINE_ADMIN_GROUP_NAME)
+    except KeyError:
+        print("El grupo "+ZINE_ADMIN_GROUP_NAME+" no existe y debería estar presente. Consulte este problema con el administrador")
+        sys.exit(0)
 
     if (len(sys.argv)<2) or (sys.argv[1]!="--build") or (sys.argv[1]!="--moderate"):
         print ("\t\t zineadmin [ --build | --moderate ] ")
