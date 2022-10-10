@@ -409,7 +409,7 @@ if __name__=='__main__':
         print("El grupo "+ZINE_ADMIN_GROUP_NAME+" no existe y debería estar presente. Consulte este problema con el administrador")
         sys.exit(0)
 
-    if (len(sys.argv)<2) or (sys.argv[1]!="--build") or (sys.argv[1]!="--moderate"):
+    if (len(sys.argv)<2) and ((sys.argv[1]!="--build") or (sys.argv[1]!="--moderate")):
         print ("\t\t zineadmin [ --build | --moderate ] ")
         sys.exit(0)
 

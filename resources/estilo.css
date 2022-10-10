@@ -75,15 +75,23 @@ nav a{
 }
 
 body > section{
-    min-height: calc(100vh - 150px - 50px);
+    min-height: calc(100vh - 150px - 80px);
 }
 
 footer{
-    height:50px;
-    padding-top:40px;
+    font-size:0.7em;
+    height:80px;
+    padding-top:30px;
     background:#053a2a;
     color:white;
     text-align:center;
+}
+
+footer p{
+    margin-bottom:10px;
+}
+footer a{
+    color:white;
 }
 
 
