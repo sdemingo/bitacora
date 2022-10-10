@@ -23,7 +23,7 @@ HTML_ROOT_DIR="/var/www/html/agora"
 ZINE_REPO="/var/agora" 
 
 ## Directorio donde encontrar los artículos en borrador
-USR_ROOT="./usrtest"      # (must be /home)
+USR_ROOT="/home"
 
 
 ACCEPTED_DIR=ZINE_REPO+"/users"    
