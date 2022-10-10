@@ -2,7 +2,6 @@
 
 import sys
 import os
-import grp
 import random
 import re
 import shutil
@@ -80,7 +79,6 @@ def createNewPost():
     dir=os.environ.get("HOME")+"/blog"
     os.system("mkdir -p "+dir)
     filename=now.strftime("%Y%m%d.md")
-    ## El fichero debe tener permisos 664 y su grupo debe ser zineadm
     with open(dir+"/"+filename,"w") as f:
         f.write(MD_TEMPLATE)
         f.close()
@@ -89,12 +87,6 @@ def createNewPost():
 
 
 if __name__=='__main__':
-
-    try:
-        grp.getgrnam(ZINE_ADMIN_GROUP_NAME)
-    except KeyError:
-        print("El grupo "+ZINE_ADMIN_GROUP_NAME+" no existe y debería estar presente. Consulte este problema con el administrador")
-        sys.exit(0)
 
     if len(sys.argv)<2:
         print ("\t\t zine [ --list | --new ] ")
