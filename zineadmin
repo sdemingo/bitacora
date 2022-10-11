@@ -216,7 +216,9 @@ def extractTitleFromMD(mdcontent):
     return matches.groups()[0]
 
 
-
+#
+# Determina si un artículo tiene la marca de borrador
+#
 def isDraft(mdfile):
     with open(mdfile,"r") as f:
         regex = r"^@\+BORRADOR"
@@ -335,6 +337,12 @@ def rejectPost(srcpath,user,comment=""):
     log(ZINE_MODERATE_LOG_FILE,srcpath+"  RECHAZADO  "+comment)
 
 
+def ignorePost(srcpath,user,comment=""):
+    filename=os.path.basename(srcpath)
+    log(ACCEPTED_DIR+"/"+user+"/"+ZINE_USERS_LOG_FILE,filename+"  EN ESPERA  "+comment) 
+
+
+
 def log(logfile, message):
     try:
         with open(logfile,"a+") as f:
@@ -374,6 +382,7 @@ def moderateContent():
             srcfile=userdir+"/"+mdfile
             acceptedfile=ACCEPTED_DIR+"/"+user+"/"+mdfile
             if (isDraft(srcfile)):
+                ignorePost(srcfile,user,"Artículo en borrador")
                 continue
             if (not os.access(srcfile, os.R_OK)):
                 rejectPost(srcfile, user, "Revisa los permisos de acceso de tu artículo. El moderador no tiene acceso al artículo.")
@@ -413,6 +422,7 @@ def moderateContent():
                     rejectPost(srcpath,user, comments)
                     nextpost=True
                 if opt=="I" or opt=="i":
+                    ignorePost(srcpath,user)
                     nextpost=True
 
             except Exception as err:

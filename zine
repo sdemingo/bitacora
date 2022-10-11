@@ -41,6 +41,7 @@ def extractTitleFromMD(mdcontent):
     return matches.groups()[0]
 
 
+
 #
 # Retorna un objeto fecha a partir de un string
 # con la forma DDMMYYYY
@@ -95,25 +96,25 @@ def showStat():
             lineas=f.readlines()
             f.close()
         for l in lineas:
-            print ("\t"+l)
+            print ("\t"+l.strip("\n"))
         print("\n\n")
 
     except:
-        print ("\tNo se encontro ningún artículo publicado")
+        print ("\tNo se encontro ningún artículo esperando moderación")
         
     
 
 if __name__=='__main__':
 
-    if (len(sys.argv)<2) or ((sys.argv[1]!="--new") and (sys.argv[1]!="--list") and (sys.argv[1]!="--stat")):
-        print ("\t\t zine [ --list | --new | --stat ] ")
+    if (len(sys.argv)<2) or ((sys.argv[1]!="new") and (sys.argv[1]!="list") and (sys.argv[1]!="log")):
+        print ("\t\t zine [ list | new | log ] ")
         sys.exit(0)
 
-    if sys.argv[1]=="--list":
+    if sys.argv[1]=="list":
         showIndexFromUser()
 
-    if sys.argv[1]=="--new":
+    if sys.argv[1]=="new":
         createNewPost()
 
-    if sys.argv[1]=="--stat":
+    if sys.argv[1]=="log":
         showStat()
