@@ -327,14 +327,14 @@ def acceptPost(srcpath,user):
     dstpath=ACCEPTED_DIR+"/"+user+"/"+filename
     shutil.copyfile(srcpath, dstpath)
     log(ACCEPTED_DIR+"/"+user+"/"+ZINE_USERS_LOG_FILE,filename+"  ACEPTADO") 
-    log(ZINE_MODERATE_LOG_FILE, srcpath+"  ACEPTADO")
+    log(ZINE_REPO+"/"+ZINE_MODERATE_LOG_FILE, srcpath+"  ACEPTADO")
 
 
 
 def rejectPost(srcpath,user,comment=""):
     filename=os.path.basename(srcpath)
     log(ACCEPTED_DIR+"/"+user+"/"+ZINE_USERS_LOG_FILE,filename+"  RECHAZADO  "+comment) 
-    log(ZINE_MODERATE_LOG_FILE,srcpath+"  RECHAZADO  "+comment)
+    log(ZINE_REPO+"/"+ZINE_MODERATE_LOG_FILE,srcpath+"  RECHAZADO  "+comment)
 
 
 def ignorePost(srcpath,user,comment=""):
