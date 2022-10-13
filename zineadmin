@@ -397,7 +397,7 @@ def moderateQueue():
 #
 def showModerateList():
     moderateFiles=moderateQueue()
-    print("Hay "+str(len(moderateFiles))+" pendientes de moderación")
+    print("Hay "+str(len(moderateFiles))+" artículos pendientes de moderación")
     
 
 #
@@ -409,7 +409,7 @@ def moderateContent():
     moderateFiles=moderateQueue()
 
     try:
-        print("Hay "+str(len(moderateFiles))+" pendientes de moderación")
+        print("Hay "+str(len(moderateFiles))+" artículos pendientes de moderación")
         input("Pulsa 'enter' para iniciar la revisión o Ctrl+C para abandonar\n")
     except KeyboardInterrupt as err:
         debug(err)
