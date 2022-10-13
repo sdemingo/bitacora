@@ -295,10 +295,18 @@ li.main-index-all-entry span.user{
 	width:80%;
     }
 
+    nav li{
+	margin-top:20px;
+    }
 
     .lasts-posts, .all-posts, .article-content{
 	width:90%;
 	padding:0;
+    }
+
+    .all-posts li{
+	display:block;
+	margin-top:15px;
     }
 
     footer{
