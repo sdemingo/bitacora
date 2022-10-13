@@ -363,10 +363,9 @@ def getDateFromString(datestr):
 
 
 #
-# Traspasa ficheros desde los directorios personales de los usuarios
-# al repositorio general de ficheros aceptados en ACCEPTED_DIR
+# Construye la cola de archivos pendientes de moderación
 #
-def moderateContent():
+def moderateQueue():
     moderateFiles=[]  #(archivo, user, flag_nuevo)
     for user in os.listdir(USR_ROOT):
         userdir=USR_ROOT+"/"+user+"/blog"
@@ -382,17 +381,32 @@ def moderateContent():
             srcfile=userdir+"/"+mdfile
             acceptedfile=ACCEPTED_DIR+"/"+user+"/"+mdfile
             if (isDraft(srcfile)):
-                ignorePost(srcfile,user,"Artículo en borrador")
-                continue
+                 continue
             if (not os.access(srcfile, os.R_OK)):
-                rejectPost(srcfile, user, "Revisa los permisos de acceso de tu artículo. El moderador no tiene acceso al artículo.")
                 continue
             if not os.path.exists(acceptedfile):
                 moderateFiles.append((srcfile, acceptedfile, user,True))      # articulo nuevo
             else: 
                 if not filecmp.cmp(srcfile,acceptedfile):
                     moderateFiles.append((srcfile, acceptedfile, user, False)) # articulo para actualizar
- 
+    return moderateFiles
+
+
+#
+# Muestra el número de artículos listos para ser moderados
+#
+def showModerateList():
+    moderateFiles=moderateQueue()
+    print("Hay "+str(len(moderateFiles))+" pendientes de moderación")
+    
+
+#
+# Traspasa ficheros desde los directorios personales de los usuarios
+# al repositorio general de ficheros aceptados en ACCEPTED_DIR
+#
+def moderateContent():
+
+    moderateFiles=moderateQueue()
 
     try:
         print("Hay "+str(len(moderateFiles))+" pendientes de moderación")
@@ -405,6 +419,14 @@ def moderateContent():
         nextpost=False
         while not nextpost:
             os.system("clear")
+            
+            if (isDraft(srcpath)):
+                ignorePost(srcfile,user,"Artículo en borrador")
+                continue
+            if (not os.access(srcpath, os.R_OK)):
+                rejectPost(srcfile, user, "Revisa los permisos de acceso de tu artículo. El moderador no tiene acceso al artículo.")
+                continue
+
             if newpost:
                 msg=MESSAGE_NEW_POST+"\tFichero "+srcpath+"\n\tUsuario: "+user+"\n\n"
                 os.system('echo -n "'+msg+'""$(cat '+srcpath+')" | less -c')
@@ -439,8 +461,8 @@ if __name__=='__main__':
         print("El grupo "+ZINE_ADMIN_GROUP_NAME+" no existe y debería estar presente. Consulte este problema con el administrador")
         sys.exit(0)
 
-    if (len(sys.argv)<2) or ((sys.argv[1]!="--build") and (sys.argv[1]!="--moderate")):
-        print ("\t\t zineadmin [ --build | --moderate ] ")
+    if (len(sys.argv)<2) or ((sys.argv[1]!="--build") and (sys.argv[1]!="--moderate")and (sys.argv[1]!="--list")):
+        print ("\t\t zineadmin [ --build | --moderate | --list ] ")
         sys.exit(0)
 
     if sys.argv[1]=="--build":
@@ -449,3 +471,6 @@ if __name__=='__main__':
 
     if sys.argv[1]=="--moderate":
         moderateContent()
+
+    if sys.argv[1]=="--list":
+        showModerateList()
