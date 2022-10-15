@@ -8,10 +8,12 @@ import re
 import shutil
 from string import Template
 from bs4 import BeautifulSoup
-from datetime import datetime
+from datetime import datetime,timezone
 from pathlib import Path
 import markdown
 import filecmp
+from feedgen.feed import FeedGenerator
+import urllib.parse
 
 ## Ruta de instalación de zine
 INSTALL_PATH="/opt/zine"
@@ -34,6 +36,7 @@ FONTS=INSTALL_PATH+"/resources/fonts"
 ZINE_USERS_LOG_FILE="registro.txt"
 ZINE_MODERATE_LOG_FILE="moderate-log.txt"
 ZINE_ADMIN_GROUP_NAME="zineadm"
+FEED_FILE=HTML_ROOT_DIR+"/atom.xml"
 
 MESSAGE_NEW_POST="\n\t ========= ARTÍCULO NUEVO ========= \n\n"
 MESSAGE_UPDATE_POST="\n\t ========= ARTÍCULO PARA ACTUALIZAR  ========= \n\n"
@@ -51,6 +54,44 @@ posts=[]
 def debug(error):
     if DEBUG_MODE and error!=None:
         print(error)
+
+
+
+#
+# Crea el feed rss del blog en general
+#
+def createFeed():
+    fg = FeedGenerator()
+    fg.link( href='http://hipatia.iesjovellanos.org/agora/atom.xml', rel='self' )
+    fg.title('Ágora | Un blog del IES G.M. Jovellanos')
+    fg.author( {'name':'IES Jovellanos','email':'hipatia.iesjovellanos@gmail.com'} )
+    fg.language('es')
+    fg.id("http://hipatia.iesjovellanos.org/agora/atom.xml")
+    
+    for post in posts:
+        path=post[0]
+        author=post[1]
+
+        fe = fg.add_entry()
+        url="http://"+urllib.parse.quote("hipatia.iesjovellanos.org/agora/users/"+path)
+        filecontent=Path(HTML_ROOT_DIR+"/users/"+path).read_text()
+        title,summary = getTitleAndSummaryFromArticle(filecontent)
+        sdate=getDateFromString(os.path.basename(path).strip(".html")).replace(tzinfo=timezone.utc)
+                
+        fe.id(url)
+        fe.title(title)
+        fe.published(sdate)
+        fe.updated(sdate)
+        fe.content(url)
+        fe.summary(summary)
+        fe.description(summary)
+        fe.link(href=url)
+
+    atomfeed = fg.atom_str(pretty=True)
+    fg.atom_file(FEED_FILE)
+
+
+    
 
 #
 # Crea una página de índice con los úĺtimos artículos de todos
@@ -258,7 +299,6 @@ def publishUserContent(user,template):
 # Esta función publica el contenido estático de resources/static
 #
 def publishStaticContent():
-    print ("Generating static content")
     template=""
     try:
         with open(HTML_TEMPLATES+"/static-post.html") as t:
@@ -308,9 +348,14 @@ def publishAllContent():
     print ("Updating CSS and fonts")
     os.system("cp "+CSS_FILE+" "+HTML_ROOT_DIR+"/resources")
     os.system("cp -r "+FONTS+" "+HTML_ROOT_DIR+"/resources")
+
+    print ("Generating static content")
     publishStaticContent()
+    print ("Generating General Index")
     createMainBlogIndex()
     createFullBlogIndex()
+    print ("Generating RSS Feed")
+    createFeed()
 
 
 #

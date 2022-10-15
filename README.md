@@ -9,6 +9,15 @@ We are using zine now in [Agora](http://hipatia.iesjovellanos.org/agora). A smal
 blog written by students and teachers of a high school. If you want to use it, ask
 me for any questions, suggestions or changes.
 
+## Dependencies
+
+You must need install in your environment the following dependencies:
+
+```
+pip3 install markdown
+pip3 install beautifulsoup4
+pip3 install feedgen
+``` 
 
 ## Write a new article
 
