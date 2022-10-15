@@ -183,7 +183,7 @@ def createMainIndexFrom(user,limit=5):
     i=0
     files=os.listdir(HTML_ROOT_DIR+"/users/"+user)
     files.sort()
-    for filename in os.listdir(HTML_ROOT_DIR+"/users/"+user):
+    for filename in files:
         if filename=="index.html":
             continue
         filecontent=Path(HTML_ROOT_DIR+"/users/"+user+"/"+filename).read_text()
