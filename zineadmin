@@ -184,7 +184,7 @@ def createMainIndexFrom(user,limit=5):
     files=os.listdir(HTML_ROOT_DIR+"/users/"+user)
     files.sort()
     for filename in files:
-        if filename=="index.html":
+        if (filename=="index.html" or filename=="img"):
             continue
         filecontent=Path(HTML_ROOT_DIR+"/users/"+user+"/"+filename).read_text()
         url=filename
@@ -219,7 +219,7 @@ def createFullIndexFrom(user):
     files=os.listdir(HTML_ROOT_DIR+"/users/"+user)
     files.sort(reverse=True)
     for filename in files:
-        if (filename=="index.html") or (filename=="index-all.html"):
+        if (filename=="index.html") or (filename=="index-all.html") or (filename=="img"):
             continue
 
         filecontent=Path(HTML_ROOT_DIR+"/users/"+user+"/"+filename).read_text()
@@ -278,8 +278,8 @@ def isDraft(mdfile):
 def publishUserContent(user,template):
     print ("Generating HTML content from "+user)
     for filename in os.listdir(ACCEPTED_DIR+"/"+user):
-        if filename == "registro.txt":
-            continue
+        if (not filename.endswith(".md")):
+                continue
         with open(ACCEPTED_DIR+"/"+user+"/"+filename) as f:
             md=f.read()
             title=extractTitleFromMD(md)
@@ -292,6 +292,14 @@ def publishUserContent(user,template):
                 h.write(html)
                 h.close()
                 f.close()
+
+            p=Path(ACCEPTED_DIR+"/"+user+"/img")
+            if p.exists():
+                os.system("mkdir -p "+HTML_ROOT_DIR+"/users/"+user+"/img")
+                os.system("cp "+ACCEPTED_DIR+"/"+user+"/img/* "+HTML_ROOT_DIR+"/users/"+user+"/img")
+
+    
+
 
 
 
@@ -349,8 +357,8 @@ def publishAllContent():
     os.system("cp "+CSS_FILE+" "+HTML_ROOT_DIR+"/resources")
     os.system("cp -r "+FONTS+" "+HTML_ROOT_DIR+"/resources")
 
-    #print ("Generating static content")
-    #publishStaticContent()
+    print ("Generating static content")
+    publishStaticContent()
     print ("Generating General Index")
     createMainBlogIndex()
     createFullBlogIndex()
@@ -372,6 +380,12 @@ def acceptPost(srcpath,user):
     filename=os.path.basename(srcpath)
     dstpath=ACCEPTED_DIR+"/"+user+"/"+filename
     shutil.copyfile(srcpath, dstpath)
+    userdir=os.path.dirname(srcpath)
+    p=Path(userdir+"/img")
+    if p.exists():
+        os.system("mkdir -p "+ACCEPTED_DIR+"/"+user+"/img")
+        os.system("cp "+userdir+"/img/* "+ACCEPTED_DIR+"/"+user+"/img")
+
     log(ACCEPTED_DIR+"/"+user+"/"+ZINE_USERS_LOG_FILE,filename+"  ACEPTADO") 
     log(ZINE_REPO+"/"+ZINE_MODERATE_LOG_FILE, srcpath+"  ACEPTADO")
 
