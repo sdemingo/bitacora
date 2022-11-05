@@ -28,6 +28,7 @@ ZINE_REPO="/var/agora"
 USR_ROOT="/var/publico"
 
 
+MAX_IMG_SIZE=500  # Kilobytes
 ACCEPTED_DIR=ZINE_REPO+"/users"    
 STATIC_FILES=ZINE_REPO+"/static"
 HTML_TEMPLATES=INSTALL_PATH+"/templates"
@@ -171,7 +172,6 @@ def getTitleAndSummaryFromArticle(filecontent):
         title=""
     summary=soup.find("p").text
     return title,summary
-
 
 
 #
@@ -349,8 +349,8 @@ def publishAllContent():
     os.system("cp "+CSS_FILE+" "+HTML_ROOT_DIR+"/resources")
     os.system("cp -r "+FONTS+" "+HTML_ROOT_DIR+"/resources")
 
-    print ("Generating static content")
-    publishStaticContent()
+    #print ("Generating static content")
+    #publishStaticContent()
     print ("Generating General Index")
     createMainBlogIndex()
     createFullBlogIndex()
@@ -365,7 +365,8 @@ def publishAllContent():
 def acceptPost(srcpath,user):
     try:
         os.makedirs(ACCEPTED_DIR+"/"+user)
-    except FileExistsError:
+    except FileExistsError as err:
+        #print (err)
         pass
 
     filename=os.path.basename(srcpath)
@@ -408,6 +409,26 @@ def getDateFromString(datestr):
 
 
 #
+# Extrae las rutas de las imágenes locales de un fichero
+# markdown. Las rutas deben empezar por "./img/" o "img/"
+# Retorna un array de tuplas con la forma (rutaImagen, tamañoEnKb)
+#
+def extractImages(filepath):
+    images_info=[]
+    f = open(filepath)
+    content = f.read()
+    userdir=os.path.dirname(filepath)
+    images=re.findall("!\[.*?\]\(\.?\/?img/(.*?)\)",content)
+    for img in images:
+        img_path=userdir+"/img/"+img
+        kb_size=int(Path(img_path).stat().st_size/1024)
+        images_info.append((os.path.basename(img_path),kb_size))
+    return images_info
+
+
+
+
+#
 # Construye la cola de archivos pendientes de moderación
 #
 def moderateQueue():
@@ -421,12 +442,12 @@ def moderateQueue():
             continue
         
         for mdfile in os.listdir(userdir):
-            if ((mdfile == ZINE_USERS_LOG_FILE) or (mdfile.index(".md") < 0 )):
+            if (not mdfile.endswith(".md")):
                 continue
             srcfile=userdir+"/"+mdfile
             acceptedfile=ACCEPTED_DIR+"/"+user+"/"+mdfile
             if (isDraft(srcfile)):
-                 continue
+                continue
             if (not os.access(srcfile, os.R_OK)):
                 continue
             if not os.path.exists(acceptedfile):
@@ -464,6 +485,12 @@ def moderateContent():
         nextpost=False
         while not nextpost:
             os.system("clear")
+
+            images_used=extractImages(srcpath)
+            img_warning=""
+            for i in images_used:
+                if (i[1]> MAX_IMG_SIZE):
+                    img_warning+="\tLa imagen "+i[0]+" ocupa demasiado\n"
             
             if (isDraft(srcpath)):
                 ignorePost(srcfile,user,"Artículo en borrador")
@@ -474,9 +501,14 @@ def moderateContent():
 
             if newpost:
                 msg=MESSAGE_NEW_POST+"\tFichero "+srcpath+"\n\tUsuario: "+user+"\n\n"
+                if img_warning!="":
+                    msg+=img_warning+"\n"
                 os.system('echo -n "'+msg+'""$(cat '+srcpath+')" | less -c')
             else:
                 msg=MESSAGE_UPDATE_POST+"\tFichero "+srcpath+"\n\tUsuario: "+user+"\n\n"
+                if img_warning!="":
+                    msg+=img_warning+"\n"
+
                 os.system('echo -n "'+msg+'""$(diff -c '+acceptpath+' '+srcpath+')" | less -c')
             try:
                 print("¿Aceptas el artículo "+srcpath+"? Pulsa")
