@@ -132,6 +132,11 @@ footer a{
 
 .article-content pre{
     overflow-x:auto;
+    margin:20px auto;
+    width:80%;
+    border:1px solid  #053a2a;
+    border-radius: 5px;
+    padding:10px;
 }
 
 .article-content table{
@@ -321,5 +326,10 @@ li.main-index-all-entry span.user{
 
     footer{
 	padding:20px;
+    }
+
+    .article-content pre{
+        width:100%;
+        font-size:1em;
     }
 }
