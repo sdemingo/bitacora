@@ -170,7 +170,14 @@ def getTitleAndSummaryFromArticle(filecontent):
         title=title[0].text
     else:
         title=""
-    summary=soup.find("p").text
+    # busco el primer parrafo con texto
+    summary=""
+    pars=soup.find_all("p")
+    for p in pars:
+        if p.text!="":
+            summary=p.text
+            break
+
     return title,summary
 
 
